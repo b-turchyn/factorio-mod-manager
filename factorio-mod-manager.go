@@ -11,10 +11,24 @@ import "strconv"
 import "strings"
 import "unicode"
 
+var modpacks string
+var mods string
+	
+
 func main() {
+	modpacks = filepath.Join(os.Getenv("APPDATA"), "Factorio", "modpacks")
+	mods = filepath.Join(os.Getenv("APPDATA"), "Factorio", "mods")
+	
+	if len(os.Args) == 2 {
+		ApplyModpack(os.Args[1], os.Args[1])
+	} else {
+		PromptForModpack()
+	}
+}
+
+func PromptForModpack() {
 	// Support other OSs later...for now, Windows only
-	modpacks := filepath.Join(os.Getenv("APPDATA"), "Factorio", "modpacks")
-	mods := filepath.Join(os.Getenv("APPDATA"), "Factorio", "mods")
+	
 	packs := GetPacks(modpacks)
 	
 	fmt.Printf("%02d: %s\n", 0, "Base game")
@@ -29,12 +43,25 @@ func main() {
 	} else {
 		name = "Base"
 	}
+	
+	ApplyModpackPack(name, pack)
+}
+
+func ApplyModpackPack(name string, pack os.FileInfo) {
+	if pack != nil {
+		ApplyModpack(name, pack.Name())
+	} else {
+		ApplyModpack(name, "")
+	}
+}
+
+func ApplyModpack(name, path string) {
 	fmt.Printf("Migrating to %s", name)
 	
 	RemoveDir(mods)
 	
-	if pack != nil {
-		CopyDir(filepath.Join(os.Getenv("APPDATA"), "Factorio", "modpacks", pack.Name()), mods)
+	if path != "" {
+		CopyDir(filepath.Join(os.Getenv("APPDATA"), "Factorio", "modpacks", path), mods)
 		fmt.Println("Done!")
 	}
 }
